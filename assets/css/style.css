@@ -1,0 +1,835 @@
+/* ========================================================= */
+/* 1. Global & Utility Styles */
+/* ========================================================= */
+
+:root {
+  /* Define the specific pink colors from your mockups */
+  --pink-light: #fce4e8; /* Very Light Pink/White for elements */
+  --pink-medium: #ffafc9; /* Medium Pink for hover/borders */
+  --pink-dark: #ff69b4; /* Deep Pink for main buttons/text */
+  --gray-text: #555;
+  --shadow-light: 0 10px 40px rgba(0, 0, 0, 0.1);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+}
+
+/* --- THEME MATCHING: Gradient Background --- */
+body {
+  /* Create the subtle, repeating pink gradient background */
+  background: radial-gradient(
+    circle at 10% 20%,
+    rgba(255, 230, 240, 1) 0%,
+    rgba(255, 204, 221, 1) 90%
+  );
+  color: #333;
+  line-height: 1.6;
+}
+
+h1,
+h2,
+h3 {
+  color: var(--pink-dark);
+}
+
+/* --- Buttons --- */
+.btn-pink {
+  background-color: var(--pink-dark);
+  color: white;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 15px;
+  cursor: pointer;
+  font-size: 1.1em;
+  font-weight: bold;
+  transition: background-color 0.2s;
+  text-decoration: none;
+  display: inline-block;
+  width: 100%; /* Make login button fill card width */
+}
+.btn-pink:hover {
+  background-color: #e65a9e;
+}
+
+/* --- Form Elements (INPUT STYLING MATCHING MOCKUP) --- */
+input[type="text"],
+input[type="password"],
+input[type="email"],
+input[type="number"],
+input[type="tel"],
+textarea {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 15px;
+  /* Match the subtle pink border and rounded corners */
+  border: 1px solid var(--pink-medium);
+  border-radius: 10px;
+  box-sizing: border-box;
+  font-size: 1em;
+  transition: border-color 0.2s;
+}
+input:focus,
+textarea:focus {
+  border-color: var(--pink-dark); /* Highlight on focus */
+  outline: none;
+}
+/* Placeholder Text Styling (Matching the light pink in mockups) */
+::placeholder {
+  color: #ff9fb4; /* Lighter pink for input text */
+  opacity: 1;
+}
+/* Override to make Login/Register input text pink for the mock-up effect */
+.auth-card input {
+  color: var(--pink-dark);
+}
+/* Ensure links are correctly colored */
+.auth-card a {
+  color: var(--pink-dark);
+  text-decoration: none;
+}
+.auth-card a:hover {
+  text-decoration: underline;
+}
+
+/* ========================================================= */
+/* 2. Header & Navigation (Appears in header.php) */
+/* ========================================================= */
+
+header {
+  background-color: var(--pink-dark);
+  color: white;
+  padding: 15px 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+.logo h1 {
+  color: white;
+  font-size: 1.8em;
+  font-weight: 900;
+}
+.nav-icons a {
+  color: white;
+  font-size: 1.5em;
+  margin-left: 20px;
+  text-decoration: none;
+}
+.nav-icons a:hover {
+  color: var(--pink-light);
+}
+
+/* ========================================================= */
+/* 2. Authentication Pages (Login & Register) */
+/* ========================================================= */
+
+.auth-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh; /* Use full height */
+  padding-top: 100px;
+  padding-bottom: 100px;
+}
+
+/* --- THEME MATCHING: Auth Card --- */
+.auth-card {
+  background-color: white;
+  padding: 40px;
+  border-radius: 35px;
+  box-shadow: var(--shadow-light);
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+  padding-top: 60px;
+  position: relative;
+}
+
+/* --- THEME MATCHING: Heart Logo Position --- */
+.auth-logo {
+  position: absolute;
+  top: -35px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: white;
+  border-radius: 50%;
+  padding: 10px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  width: 70px;
+  height: 70px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.auth-logo i {
+  color: var(--pink-dark);
+  font-size: 2.5em;
+}
+.auth-logo img {
+  /* If you use an image for the ChuChu logo */
+  width: 70px;
+  height: 70px;
+}
+
+.auth-card h2 {
+  margin-bottom: 20px;
+  font-size: 1.8em;
+}
+.auth-card p {
+  margin-top: 15px;
+  font-size: 0.9em;
+  color: var(--gray-text);
+}
+/* Specific alignment for the login page text */
+.login-welcome {
+  color: var(--pink-dark);
+  font-size: 1.5em;
+  margin-bottom: 15px;
+}
+.forgot-password {
+  display: block;
+  text-align: right;
+  font-size: 0.9em;
+  margin-bottom: 20px;
+  margin-top: -5px;
+}
+
+.login-form {
+  width: 100%;
+  margin: 0 auto;
+  text-align: left; /* Changed from center to left for form fields */
+}
+
+.login-form .btn-pink {
+  display: block;
+  width: 100%;
+  text-align: center;
+}
+
+/* --- NEW: Form Group Styling for Clear Vertical Stacking --- */
+.form-group {
+  margin-bottom: 20px; /* Space *after* the label/input pair */
+  text-align: left; /* Aligns the group text (label) to the left */
+}
+
+/* Ensure labels are positioned correctly and stack on top of inputs */
+.auth-card label {
+  display: block; /* Makes the label take up its own line */
+  text-align: left; /* Ensures the label text aligns left */
+  margin-bottom: 5px; /* Space between the label and the input field below it */
+  font-size: 0.9em;
+  color: var(--gray-text); /* Use a less distracting color for the label text */
+}
+
+/* Fix for the Oval Heart: Add explicit height/width to .auth-logo */
+.auth-logo {
+  position: absolute;
+  top: -35px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: white;
+  border-radius: 50%;
+  padding: 10px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+
+  /* --- THE OVAL FIX --- */
+  width: 70px;
+  height: 70px;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.heart-icon {
+  color: var(--pink-dark);
+  font-size: 2.5em;
+  margin-bottom: 15px;
+}
+
+.signup-link {
+  display: block;
+  width: 100%;
+  margin-top: 20px;
+  margin-bottom: 0;
+  font-size: 0.9em;
+  color: var(--gray-text);
+  text-align: center;
+  /* Remove any float or positioning that might be inherited */
+  clear: both;
+}
+
+.signup-link a {
+  color: var(--pink-dark);
+  text-decoration: none;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.signup-link a:hover {
+  text-decoration: underline;
+}
+
+/* ========================================================= */
+/* 4. Product Page (index.php) */
+/* ========================================================= */
+
+/* NEW: Full-width dark pink banner area */
+.product-hero-banner {
+  background-color: var(--pink-dark); /* Dark pink fill */
+  color: white;
+  padding: 80px 20px 100px 20px; /* Creates the desired height for the banner, adds side padding */
+  width: 100%;
+  text-align: center;
+}
+
+/* Ensure the wrapper for the heart and title is centered and constrained */
+.hero-content-wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.product-hero-banner h1 {
+  color: white;
+  font-size: 4em;
+  font-weight: 900;
+  /* Ensure no residual margin is pushing it */
+  margin: 0;
+  padding: 0;
+}
+.product-hero-banner p {
+  color: white;
+  margin-top: 5px;
+  margin-bottom: 0;
+}
+.product-hero-banner .hero-heart {
+  font-size: 6em;
+  color: rgba(255, 255, 255, 0.5); /* Semi-transparent heart */
+  display: block;
+  margin: 0 auto 10px auto; /* Center the heart icon */
+  width: fit-content; /* Only take up the space of the heart */
+}
+
+/* NEW: Wrapper for the overlapping content */
+.product-page-wrapper {
+  /* Ensures the catalog is centered over the banner */
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+  /* THIS IS THE CRITICAL OVERLAP: Adjust the negative margin until the overlap is correct */
+  margin-top: -100px;
+  position: relative; /* Ensure z-index works correctly */
+  z-index: 5; /* Place the white box above the banner */
+}
+
+.product-grid-section {
+  /* This is the white block containing the cards */
+  background-color: white;
+  padding: 40px;
+  border-radius: 20px;
+  box-shadow: var(--shadow-light);
+  text-align: center;
+}
+
+.product-grid-section h2 {
+  color: var(--pink-dark);
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 30px;
+  margin-top: 20px;
+}
+
+.product-card {
+  background-color: white;
+  border-radius: 15px;
+  box-shadow: var(--shadow-light);
+  overflow: hidden;
+  position: relative;
+  transition: transform 0.2s;
+  cursor: pointer;
+}
+.product-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(255, 105, 180, 0.2);
+}
+.product-image-wrapper {
+  background-color: var(--pink-light);
+  padding: 20px;
+  height: 200px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.product-image-wrapper img {
+  max-height: 100%;
+  max-width: 100%;
+  object-fit: contain;
+}
+.product-info {
+  padding: 15px;
+  text-align: left;
+}
+.product-brand {
+  font-size: 0.8em;
+  color: var(--gray-text);
+}
+.product-name {
+  font-size: 1.1em;
+  margin: 5px 0;
+  color: #333;
+}
+.product-price {
+  font-weight: bold;
+  color: var(--pink-dark);
+}
+
+.top-banner-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 60px 40px 100px 40px; /* Big padding for the tall pink area */
+  text-align: center;
+}
+
+.quick-add-btn {
+  position: absolute;
+  bottom: 15px;
+  right: 15px;
+  background-color: var(--pink-medium);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  font-size: 1.1em;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.2s;
+}
+.quick-add-btn:hover {
+  background-color: var(--pink-dark);
+}
+
+/* ========================================================= */
+/* 5. Modal Styles (Product Detail Pop-up) */
+/* ========================================================= */
+
+.modal {
+  display: none; /* Hidden by default */
+  position: fixed;
+  z-index: 10;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.6); /* Semi-transparent background */
+  align-items: center;
+  justify-content: center;
+}
+.modal-content {
+  background-color: white;
+  margin: auto;
+  padding: 30px;
+  border-radius: 20px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  max-width: 800px;
+  position: relative;
+}
+.close-btn {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+  position: absolute;
+  top: 10px;
+  right: 20px;
+  cursor: pointer;
+}
+.close-btn:hover,
+.close-btn:focus {
+  color: var(--pink-dark);
+  text-decoration: none;
+}
+.product-detail-layout {
+  display: flex;
+  gap: 30px;
+}
+.detail-image {
+  flex: 1;
+  background-color: var(--pink-light);
+  border-radius: 15px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.detail-image img {
+  max-width: 100%;
+  height: auto;
+}
+.detail-info {
+  flex: 2;
+}
+.detail-price {
+  font-size: 1.5em;
+  font-weight: bold;
+  color: var(--pink-dark);
+  margin: 10px 0;
+}
+.quantity-control {
+  margin: 20px 0;
+}
+.qty-box {
+  display: flex;
+  width: 120px;
+  margin-top: 5px;
+  border: 1px solid var(--pink-medium);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.qty-box input {
+  text-align: center;
+  border: none;
+  padding: 8px 5px;
+  width: 40px;
+  margin: 0;
+}
+.qty-box button {
+  background-color: var(--pink-light);
+  color: #333;
+  border: none;
+  padding: 8px;
+  cursor: pointer;
+  width: 40px;
+  font-weight: bold;
+  transition: background-color 0.1s;
+}
+.qty-box button:hover {
+  background-color: var(--pink-medium);
+}
+
+/* ========================================================= */
+/* 6. Cart & Checkout Pages (cart.php) */
+/* ========================================================= */
+
+.cart-main-container {
+  padding: 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* --- Cart View Layout --- */
+.cart-layout {
+  display: flex;
+  gap: 30px;
+  margin-top: 20px;
+}
+.cart-items-list {
+  flex: 2;
+}
+.order-summary-card {
+  flex: 1;
+  background-color: white;
+  padding: 20px;
+  border-radius: 15px;
+  box-shadow: var(--shadow-light);
+  height: fit-content;
+}
+
+/* --- Cart Item Card --- */
+.cart-item {
+  background-color: white;
+  border-radius: 15px;
+  box-shadow: var(--shadow-light);
+  padding: 15px;
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.item-details {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+}
+.item-details img {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 10px;
+  background-color: var(--pink-light);
+  padding: 5px;
+}
+.item-info h3 {
+  font-size: 1.1em;
+  margin-bottom: 5px;
+}
+.item-info .shade-desc {
+  font-size: 0.9em;
+  color: var(--gray-text);
+}
+.item-price {
+  text-align: right;
+}
+.total-price {
+  font-weight: bold;
+  font-size: 1.2em;
+  color: var(--pink-dark);
+}
+.unit-price {
+  font-size: 0.8em;
+  color: var(--gray-text);
+  margin: 5px 0;
+}
+.delete-item-btn {
+  background: none;
+  border: none;
+  color: #f00;
+  cursor: pointer;
+  font-size: 1.2em;
+}
+
+/* --- Summary Card --- */
+.order-summary-card h3 {
+  margin-bottom: 15px;
+  text-align: center;
+}
+.summary-line {
+  display: flex;
+  justify-content: space-between;
+  margin: 10px 0;
+}
+.summary-line.total span:last-child {
+  font-size: 1.5em;
+  font-weight: bold;
+  color: var(--pink-dark);
+}
+.shipping-note {
+  font-size: 0.8em;
+  color: green;
+  text-align: right;
+  margin-bottom: 10px;
+}
+.full-width-btn {
+  width: 100%;
+  margin-top: 10px;
+}
+
+/* --- Checkout View Layout --- */
+#checkout-view {
+  display: flex;
+  flex-direction: column;
+}
+.checkout-layout {
+  display: flex;
+  gap: 30px;
+  margin-top: 20px;
+}
+.checkout-forms {
+  flex: 2;
+}
+.checkout-summary {
+  flex: 1;
+}
+.shipping-info-section,
+.payment-method-section {
+  background-color: white;
+  padding: 25px;
+  border-radius: 15px;
+  box-shadow: var(--shadow-light);
+  margin-bottom: 20px;
+}
+.payment-options label {
+  display: block;
+  margin-bottom: 10px;
+  font-weight: 500;
+}
+.checkout-item-list {
+  list-style: none;
+  padding: 0;
+  margin-bottom: 15px;
+}
+.checkout-item-list li {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9em;
+  margin-bottom: 5px;
+}
+
+/* ========================================================= */
+/* 7. Admin Panel Styles */
+/* ========================================================= */
+
+.admin-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* --- SIDEBAR STYLING --- */
+.sidebar {
+  width: 250px;
+  background-color: #333; /* Dark background for high contrast */
+  color: white;
+  padding: 20px;
+  /* Use a shadow that lifts it off the background */
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
+  position: sticky; /* Sticky position keeps it visible */
+  top: 0;
+  height: 100vh; /* Use full height */
+}
+
+.sidebar h2 {
+  color: var(--pink-medium); /* Pink title */
+  margin-bottom: 30px;
+  font-size: 1.5em;
+  border-bottom: 2px solid var(--pink-medium);
+  padding-bottom: 10px;
+}
+
+.sidebar-nav ul {
+  list-style: none;
+  padding: 0;
+}
+
+.sidebar-nav li a {
+  display: block;
+  color: white;
+  text-decoration: none;
+  padding: 12px 10px;
+  margin-bottom: 5px;
+  border-radius: 5px;
+  transition: background-color 0.2s, color 0.2s;
+  font-weight: 500;
+}
+
+/* Active/Hover styles */
+.sidebar-nav li a:hover,
+.sidebar-nav li a.active {
+  background-color: var(--pink-dark); /* Highlight the active link */
+  color: white;
+}
+
+/* --- MAIN CONTENT AREA --- */
+.admin-main-content {
+  flex-grow: 1;
+  padding: 40px;
+  background-color: var(--pink-light); /* Light pink background for content */
+}
+
+/* Styling for the H1/H2 on the dashboard */
+.admin-main-content h1 {
+  color: var(--pink-dark);
+  margin-bottom: 10px;
+}
+.admin-main-content p {
+  color: var(--gray-text);
+}
+
+.admin-layout input:not([type="submit"]),
+.admin-layout textarea {
+  /* Ensure only admin inputs and textareas get the full-width pink bar style */
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 15px;
+  border: 1px solid var(--pink-medium);
+  border-radius: 5px; /* Smaller radius for admin tables/forms */
+  box-sizing: border-box;
+  font-size: 1em;
+  /* This background is causing the giant pink bars, only apply if needed for the admin design */
+  background-color: var(--pink-light); /* Apply light pink fill */
+  color: #333;
+}
+
+/* Ensure the main form container doesn't stretch too wide */
+.admin-content form {
+  max-width: 600px; /* Constrain the form width */
+  margin: 0 auto 40px auto; /* Center it and add space below */
+  background-color: white; /* Optional: Make the form area white for separation */
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: var(--shadow-light);
+}
+
+.admin-content label {
+  display: block;
+  margin-top: 15px;
+  font-weight: bold;
+  color: var(--pink-dark);
+}
+
+.admin-content form input:not([type="submit"]),
+.admin-content form textarea {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 15px;
+  border: 1px solid var(--pink-medium);
+  border-radius: 10px;
+  box-sizing: border-box;
+  font-size: 1em;
+  background-color: white;
+  color: #333;
+}
+
+.modal {
+  display: none; /* Hidden by default */
+  position: fixed;
+  z-index: 1000; /* Higher z-index to ensure it's on top */
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.6);
+  /* ADD THESE TWO LINES FOR FLEXBOX CENTERING */
+  align-items: center;
+  justify-content: center;
+}
+
+/* When modal is shown */
+.modal[style*="display: flex"] {
+  display: flex !important;
+}
+
+.modal-content {
+  background-color: white;
+  margin: auto;
+  padding: 30px;
+  border-radius: 20px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  max-width: 800px;
+  width: 90%; /* Responsive width */
+  position: relative;
+  animation: modalSlideIn 0.3s ease;
+}
+
+@keyframes modalSlideIn {
+  from {
+    transform: translateY(-50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Make product cards clickable */
+.product-card {
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.product-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(255, 105, 180, 0.3);
+}
