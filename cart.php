@@ -136,9 +136,9 @@ if ($cart_result && $cart_result->num_rows > 0) {
                     <button class="btn-pink full-width-btn" onclick="showCheckoutView()" <?php echo count($cart_items) == 0 ? 'disabled' : ''; ?>>
                         Proceed to Checkout
                     </button>
-                    <button class="btn-secondary full-width-btn" onclick="window.location.href='index.php'" style="background-color: var(--pink-light); color: var(--pink-dark); margin-top: 10px;">
-                        Continue Shopping
-                    </button>
+<button class="btn-gray full-width-btn" onclick="window.location.href='index.php'">
+    Continue Shopping
+</button>
                 </div>
             </div>
         </div>
@@ -191,7 +191,7 @@ if ($cart_result && $cart_result->num_rows > 0) {
                     <div class="summary-line total"><span>Total</span><span>₱<?php echo number_format($cart_subtotal, 2); ?></span></div>
                     
                     <button type="submit" class="btn-pink full-width-btn">Place Order</button>
-                    <button type="button" class="btn-secondary full-width-btn" onclick="showCartView()" style="background-color: var(--pink-light); color: var(--pink-dark);">Back to Cart</button>
+<button type="button" class="btn-gray full-width-btn" onclick="showCartView()">Back to Cart</button>
                 </div>
             </form>
         </div>

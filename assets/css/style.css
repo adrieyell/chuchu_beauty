@@ -55,6 +55,35 @@ h3 {
   background-color: #e65a9e;
 }
 
+.btn-gray {
+  /* Match the core button structure of btn-pink */
+  background-color: #d0d0d0;
+  color: #555;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 15px; /* Ensure radius matches btn-pink */
+  cursor: pointer;
+  font-size: 1.1em;
+  font-weight: bold;
+  transition: background-color 0.2s, box-shadow 0.2s;
+  text-decoration: none;
+  display: inline-block;
+  width: 100%;
+  margin-top: 10px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15); /* A clear, visible lift */
+  outline: none;
+}
+
+.btn-gray:hover {
+  background-color: #b0b0b0;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+}
+
+.btn-gray:focus {
+  outline: none;
+  border: none;
+}
+
 /* --- Form Elements (INPUT STYLING MATCHING MOCKUP) --- */
 input[type="text"],
 input[type="password"],
@@ -790,7 +819,6 @@ header {
   height: 100%;
   overflow: auto;
   background-color: rgba(0, 0, 0, 0.6);
-  /* ADD THESE TWO LINES FOR FLEXBOX CENTERING */
   align-items: center;
   justify-content: center;
 }
