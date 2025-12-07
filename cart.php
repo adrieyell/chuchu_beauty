@@ -16,23 +16,33 @@ $user_id = $_SESSION['user_id'];
 $cart_items = [];
 $cart_subtotal = 0;
 
-// Fetch cart items from database for logged-in users
-$cart_query = "SELECT c.cart_id, c.product_id, c.quantity, p.name, p.price, p.image_url, p.stock_quantity 
+// Fetch cart items with variant information
+$cart_query = "SELECT c.cart_id, c.product_id, c.quantity, c.variant_id,
+               p.name, p.price, p.image_url, p.stock_quantity,
+               pv.shade_name, pv.shade_color, pv.stock_quantity as variant_stock
                FROM cart c 
                JOIN products p ON c.product_id = p.product_id 
+               LEFT JOIN product_variants pv ON c.variant_id = pv.variant_id
                WHERE c.user_id = $user_id";
 
 $cart_result = $conn->query($cart_query);
 
 if ($cart_result && $cart_result->num_rows > 0) {
     while ($row = $cart_result->fetch_assoc()) {
-        $cart_items[$row['product_id']] = [
+        // Use variant stock if variant exists, otherwise use product stock
+        $available_stock = !empty($row['variant_id']) ? $row['variant_stock'] : $row['stock_quantity'];
+        
+        $cart_items[] = [
             'cart_id' => $row['cart_id'],
+            'product_id' => $row['product_id'],
+            'variant_id' => $row['variant_id'],
             'name' => $row['name'],
             'price' => $row['price'],
             'quantity' => $row['quantity'],
             'image_url' => $row['image_url'],
-            'stock_quantity' => $row['stock_quantity']
+            'stock_quantity' => $available_stock,
+            'shade_name' => $row['shade_name'],
+            'shade_color' => $row['shade_color']
         ];
         $cart_subtotal += $row['price'] * $row['quantity'];
     }
@@ -63,6 +73,23 @@ if ($cart_result && $cart_result->num_rows > 0) {
             border-radius: 10px;
             text-align: center;
         }
+        .shade-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 5px;
+            padding: 5px 10px;
+            background-color: #fff5f8;
+            border-radius: 8px;
+            font-size: 0.85em;
+        }
+        .shade-color-dot {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
     </style>
 </head>
 <body>
@@ -87,7 +114,7 @@ if ($cart_result && $cart_result->num_rows > 0) {
                 <div class="cart-items-list">
                     
                     <?php if (count($cart_items) > 0): ?>
-                        <?php foreach ($cart_items as $id => $item): 
+                        <?php foreach ($cart_items as $item): 
                             $item_total = $item['price'] * $item['quantity'];
                             $image = !empty($item['image_url']) ? $item['image_url'] : 'assets/images/placeholder.jpg';
                         ?>
@@ -96,17 +123,25 @@ if ($cart_result && $cart_result->num_rows > 0) {
                                 <img src="<?php echo htmlspecialchars($image); ?>" alt="<?php echo htmlspecialchars($item['name']); ?>">
                                 <div class="item-info">
                                     <h3><?php echo htmlspecialchars($item['name']); ?></h3>
+                                    
+                                    <?php if (!empty($item['shade_name'])): ?>
+                                        <div class="shade-indicator">
+                                            <div class="shade-color-dot" style="background-color: <?php echo htmlspecialchars($item['shade_color']); ?>;"></div>
+                                            <span><strong>Shade:</strong> <?php echo htmlspecialchars($item['shade_name']); ?></span>
+                                        </div>
+                                    <?php endif; ?>
+                                    
                                     <div class="qty-box small">
-                                        <button class="qty-minus" onclick="updateCart(<?php echo $id; ?>, -1)">-</button>
+                                        <button class="qty-minus" onclick="updateCart(<?php echo $item['cart_id']; ?>, -1)">-</button>
                                         <input type="number" value="<?php echo $item['quantity']; ?>" min="1" readonly>
-                                        <button class="qty-plus" onclick="updateCart(<?php echo $id; ?>, 1)">+</button>
+                                        <button class="qty-plus" onclick="updateCart(<?php echo $item['cart_id']; ?>, 1)">+</button>
                                     </div>
                                 </div>
                             </div>
                             <div class="item-price">
                                 <p class="total-price">₱<?php echo number_format($item_total, 2); ?></p>
                                 <p class="unit-price">₱<?php echo number_format($item['price'], 2); ?> / item</p>
-                                <a href="remove_from_cart.php?id=<?php echo $id; ?>" class="delete-item-btn" onclick="return confirm('Remove this item from cart?')">
+                                <a href="remove_from_cart.php?cart_id=<?php echo $item['cart_id']; ?>" class="delete-item-btn" onclick="return confirm('Remove this item from cart?')">
                                     <i class="fas fa-trash-alt"></i>
                                 </a>
                             </div>
@@ -136,9 +171,9 @@ if ($cart_result && $cart_result->num_rows > 0) {
                     <button class="btn-pink full-width-btn" onclick="showCheckoutView()" <?php echo count($cart_items) == 0 ? 'disabled' : ''; ?>>
                         Proceed to Checkout
                     </button>
-<button class="btn-gray full-width-btn" onclick="window.location.href='index.php'">
-    Continue Shopping
-</button>
+                    <button class="btn-gray full-width-btn" onclick="window.location.href='index.php'">
+                        Continue Shopping
+                    </button>
                 </div>
             </div>
         </div>
@@ -164,7 +199,7 @@ if ($cart_result && $cart_result->num_rows > 0) {
                         <div class="payment-options">
                             <label>
                                 <input type="radio" name="payment_method" value="GCash" required checked> 
-                                GCash (Payment Simulation)
+                                GCash
                             </label>
                             <label>
                                 <input type="radio" name="payment_method" value="COD" required> 
@@ -179,7 +214,12 @@ if ($cart_result && $cart_result->num_rows > 0) {
                     <ul class="checkout-item-list">
                         <?php foreach ($cart_items as $item): ?>
                             <li>
-                                <span><?php echo $item['quantity']; ?>x <?php echo htmlspecialchars($item['name']); ?></span>
+                                <span>
+                                    <?php echo $item['quantity']; ?>x <?php echo htmlspecialchars($item['name']); ?>
+                                    <?php if (!empty($item['shade_name'])): ?>
+                                        <br><small style="color: var(--gray-text);">Shade: <?php echo htmlspecialchars($item['shade_name']); ?></small>
+                                    <?php endif; ?>
+                                </span>
                                 <span>₱<?php echo number_format($item['price'] * $item['quantity'], 2); ?></span>
                             </li>
                         <?php endforeach; ?>
@@ -191,7 +231,7 @@ if ($cart_result && $cart_result->num_rows > 0) {
                     <div class="summary-line total"><span>Total</span><span>₱<?php echo number_format($cart_subtotal, 2); ?></span></div>
                     
                     <button type="submit" class="btn-pink full-width-btn">Place Order</button>
-<button type="button" class="btn-gray full-width-btn" onclick="showCartView()">Back to Cart</button>
+                    <button type="button" class="btn-gray full-width-btn" onclick="showCartView()">Back to Cart</button>
                 </div>
             </form>
         </div>
@@ -199,8 +239,8 @@ if ($cart_result && $cart_result->num_rows > 0) {
     </main>
     <script src="assets/js/script.js"></script>
     <script>
-        function updateCart(id, change) {
-            window.location.href = `update_cart.php?id=${id}&change=${change}`;
+        function updateCart(cartId, change) {
+            window.location.href = `update_cart.php?cart_id=${cartId}&change=${change}`;
         }
 
         function showCheckoutView() {

@@ -33,10 +33,11 @@ if (isset($_GET['view_id'])) {
     $detail_result = $stmt->get_result();
     $order_details = $detail_result->fetch_assoc();
 
-    // Fetch the list of items in that order
-    $items_sql = "SELECT oi.*, p.name 
+    // Fetch the list of items in that order WITH VARIANT INFO
+    $items_sql = "SELECT oi.*, p.name, pv.shade_name, pv.shade_color
                   FROM order_items oi
                   JOIN products p ON oi.product_id = p.product_id
+                  LEFT JOIN product_variants pv ON oi.variant_id = pv.variant_id
                   WHERE oi.order_id = ?";
     $items_stmt = $conn->prepare($items_sql);
     $items_stmt->bind_param("i", $view_id);
@@ -199,6 +200,24 @@ if (isset($_SESSION['order_message'])) {
         .empty-state p {
             color: var(--gray-text);
         }
+        
+        .shade-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background-color: #fff5f8;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            margin-top: 5px;
+        }
+        .shade-color-mini {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
     </style>
 </head>
 <body>
@@ -274,7 +293,16 @@ if (isset($_SESSION['order_message'])) {
                             <?php if ($items_result && $items_result->num_rows > 0): ?>
                                 <?php while($item = $items_result->fetch_assoc()): ?>
                                     <tr>
-                                        <td><?php echo htmlspecialchars($item['name']); ?></td>
+                                        <td>
+                                            <?php echo htmlspecialchars($item['name']); ?>
+                                            <?php if (!empty($item['shade_name'])): ?>
+                                                <br>
+                                                <span class="shade-badge">
+                                                    <div class="shade-color-mini" style="background-color: <?php echo htmlspecialchars($item['shade_color']); ?>;"></div>
+                                                    <span>Shade: <?php echo htmlspecialchars($item['shade_name']); ?></span>
+                                                </span>
+                                            <?php endif; ?>
+                                        </td>
                                         <td><?php echo $item['quantity']; ?></td>
                                         <td>₱<?php echo number_format($item['price_at_order'], 2); ?></td>
                                         <td><strong>₱<?php echo number_format($item['price_at_order'] * $item['quantity'], 2); ?></strong></td>
