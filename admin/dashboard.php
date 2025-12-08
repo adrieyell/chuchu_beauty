@@ -2,9 +2,9 @@
 session_start();
 include('../includes/db_config.php');
 
-// Check if the user is logged in AND is an admin
+// Check if the user is logged in and is an admin
 if (!isset($_SESSION['logged_in']) || $_SESSION['role'] !== 'admin') {
-    // If not admin, redirect them to the login page
+    // If not admin, redirect to the login page
     header("Location: ../login.php");
     exit();
 }
@@ -20,7 +20,8 @@ if (!isset($_SESSION['logged_in']) || $_SESSION['role'] !== 'admin') {
     <link rel="stylesheet" href="../assets/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        /* Basic Admin styles (can be moved to a separate admin.css later) */
+
+        // Admin dashboard design 
         .admin-sidebar {
             width: 250px;
             background-color: #333;

@@ -11,14 +11,14 @@ if (!isset($_SESSION['logged_in']) || $_SESSION['role'] !== 'admin') {
 $message = '';
 $order_details = [];
 
-// --- A. Fetch All Orders (for the main list) ---
+// Fetch All Orders (for the main list)
 $orders_sql = "SELECT o.order_id, u.fullname, o.total_amount, o.order_date, o.order_status, o.payment_method
                FROM orders o
                JOIN users u ON o.user_id = u.user_id
                ORDER BY o.order_date DESC";
 $orders_result = $conn->query($orders_sql);
 
-// --- B. Fetch Order Items (when viewing details) ---
+// Fetch Order Items (when viewing details) 
 if (isset($_GET['view_id'])) {
     $view_id = intval($_GET['view_id']);
     
@@ -45,7 +45,7 @@ if (isset($_GET['view_id'])) {
     $items_result = $items_stmt->get_result();
 }
 
-// --- C. Update Order Status Logic (Processing, Shipped, etc.) ---
+// Update Order Status Logic (Processing, Shipped, etc.)
 if (isset($_POST['update_status']) && isset($_POST['order_id']) && isset($_POST['status'])) {
     $update_order_id = intval($_POST['order_id']);
     $new_status = $conn->real_escape_string($_POST['status']);
@@ -239,7 +239,6 @@ if (isset($_SESSION['order_message'])) {
             <?php echo $message; ?>
 
             <?php if (!empty($order_details)): ?>
-                <!-- ORDER DETAILS VIEW -->
                 <a href="view_orders.php" class="btn-secondary" style="margin-bottom: 20px;">
                     <i class="fas fa-arrow-left"></i> Back to All Orders
                 </a>
@@ -324,7 +323,6 @@ if (isset($_SESSION['order_message'])) {
                 </div>
 
             <?php else: ?>
-                <!-- ALL ORDERS LIST VIEW -->
                 <h2 style="margin-top: 20px;">All Orders</h2>
                 <?php if ($orders_result && $orders_result->num_rows > 0): ?>
                     <table class="product-table">

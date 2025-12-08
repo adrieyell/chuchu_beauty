@@ -144,9 +144,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['submit_product'])) {
         if ($stmt->execute()) {
             $saved_product_id = $product_id ? $product_id : $conn->insert_id;
             
-            // Handle variants/shades
+            // HANDLE SHADES/VARIANTS
             if (isset($_POST['shade_names']) && is_array($_POST['shade_names'])) {
-                // Delete existing variants for this product (if updating)
                 if ($product_id) {
                     $delete_variants = "DELETE FROM product_variants WHERE product_id = ?";
                     $del_stmt = $conn->prepare($delete_variants);
@@ -154,7 +153,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['submit_product'])) {
                     $del_stmt->execute();
                 }
                 
-                // Insert new variants
+                // INSERT NEW VARIANTS
                 $variant_sql = "INSERT INTO product_variants (product_id, shade_name, shade_color, stock_quantity) VALUES (?, ?, ?, ?)";
                 $variant_stmt = $conn->prepare($variant_sql);
                 
@@ -434,7 +433,6 @@ $products_result = $conn->query($products_sql);
                     <img id="image_preview" class="image-preview" style="max-width: 200px; border-radius: 10px; display: none;" alt="Image preview">
                 </div>
 
-                <!-- SHADES/VARIANTS SECTION -->
                 <div class="variant-section">
                     <h3><i class="fas fa-palette"></i> Product Shades/Variants (Optional)</h3>
                     <p style="color: var(--gray-text); margin-bottom: 15px; font-size: 0.9em;">
