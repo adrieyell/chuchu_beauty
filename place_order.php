@@ -1,6 +1,7 @@
 <?php
 session_start();
 include('includes/db_config.php');
+include('includes/email_config.php');
 
 // Check if user is logged in
 if (!isset($_SESSION['user_id']) || !isset($_SESSION['logged_in'])) {
@@ -22,10 +23,18 @@ $phone_number = $conn->real_escape_string($_POST['phone_number']);
 $shipping_address = $conn->real_escape_string($_POST['shipping_address']);
 $payment_method = $conn->real_escape_string($_POST['payment_method']);
 
+// Get user email for notifications
+$user_email_query = "SELECT email FROM users WHERE user_id = ?";
+$email_stmt = $conn->prepare($user_email_query);
+$email_stmt->bind_param("i", $user_id);
+$email_stmt->execute();
+$user_email_result = $email_stmt->get_result();
+$user_email = $user_email_result->fetch_assoc()['email'];
+
 // Fetch cart items with variant information
 $cart_query = "SELECT c.product_id, c.quantity, c.variant_id, 
                p.name, p.price, p.stock_quantity,
-               pv.stock_quantity as variant_stock
+               pv.stock_quantity as variant_stock, pv.shade_name
                FROM cart c 
                JOIN products p ON c.product_id = p.product_id 
                LEFT JOIN product_variants pv ON c.variant_id = pv.variant_id
@@ -44,6 +53,7 @@ if (!$cart_result || $cart_result->num_rows == 0) {
 // Calculate total and validate stock
 $cart_items = [];
 $total_amount = 0;
+$items_html = ''; // For email
 
 while ($item = $cart_result->fetch_assoc()) {
     // Check stock availability - use variant stock if variant exists
@@ -57,6 +67,14 @@ while ($item = $cart_result->fetch_assoc()) {
     
     $cart_items[] = $item;
     $total_amount += $item['price'] * $item['quantity'];
+    
+    // Build items HTML for email
+    $item_name = $item['name'];
+    if (!empty($item['shade_name'])) {
+        $item_name .= ' - ' . $item['shade_name'];
+    }
+    $items_html .= '<li>' . $item['quantity'] . 'x ' . htmlspecialchars($item_name) . 
+                   ' - ₱' . number_format($item['price'] * $item['quantity'], 2) . '</li>';
 }
 
 // Start transaction
@@ -104,6 +122,23 @@ try {
     
     // Commit transaction
     $conn->commit();
+    
+    // 4. Send order confirmation email
+    $order_data = [
+        'order_id' => $order_id,
+        'customer_name' => $fullname,
+        'order_date' => date('Y-m-d H:i:s'),
+        'status' => 'Pending',
+        'total' => $total_amount,
+        'shipping_address' => $shipping_address,
+        'payment_method' => $payment_method,
+        'items_html' => $items_html
+    ];
+    
+    $email_subject = "Order Confirmation - Sol Beauty Order #" . $order_id;
+    $email_body = getOrderConfirmationEmailTemplate($order_data);
+    
+    sendOrderEmail($user_email, $email_subject, $email_body, $fullname);
     
     // Set success message
     $_SESSION['order_success'] = true;

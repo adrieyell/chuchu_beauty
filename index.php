@@ -7,7 +7,7 @@ session_start();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ChuChu Beauty | Products</title>
+    <title>Sol Beauty | Products</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -30,9 +30,9 @@ session_start();
         <div class="hero-sparkle"></div>
         
         <div class="hero-content-wrapper">
-            <i class="fas fa-heart hero-heart"></i>
-            <h1>ChuChu Beauty</h1>
-            <p>The best beauty products for you.</p>
+            <i class="fas fa-sun hero-heart"></i>
+            <h1>Sol Beauty</h1>
+            <p>Where every shade shines.</p>
             <p class="hero-subtext">✨ Premium Quality • Affordable Prices • Fast Delivery ✨</p>
         </div>
     </div>
@@ -148,11 +148,6 @@ session_start();
                 <i class="fas fa-shield-alt"></i>
                 <h3>Secure Payment</h3>
                 <p>100% secure payment processing</p>
-            </div>
-            <div class="feature-card">
-                <i class="fas fa-headset"></i>
-                <h3>24/7 Support</h3>
-                <p>We're here to help you anytime</p>
             </div>
         </section>
     </div>

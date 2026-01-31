@@ -2,8 +2,8 @@
 session_start();
 include('../includes/db_config.php');
 
-// Check if the user is logged in and is an admin
-if (!isset($_SESSION['logged_in']) || $_SESSION['role'] !== 'admin') {
+// Check if the user is logged in and is staff
+if (!isset($_SESSION['logged_in']) || $_SESSION['role'] !== 'staff') {
     header("Location: ../login.php");
     exit();
 }
@@ -11,12 +11,12 @@ if (!isset($_SESSION['logged_in']) || $_SESSION['role'] !== 'admin') {
 // Fetch dashboard statistics
 $stats = [];
 
-// Total Products
+// Total Products (view only for staff)
 $products_query = "SELECT COUNT(*) as total FROM products";
 $products_result = $conn->query($products_query);
 $stats['total_products'] = $products_result->fetch_assoc()['total'];
 
-// Low Stock Products (less than 10)
+// Low Stock Products
 $low_stock_query = "SELECT COUNT(*) as total FROM products WHERE stock_quantity < 10 AND stock_quantity > 0";
 $low_stock_result = $conn->query($low_stock_query);
 $stats['low_stock'] = $low_stock_result->fetch_assoc()['total'];
@@ -36,35 +36,44 @@ $active_query = "SELECT COUNT(*) as total FROM orders WHERE order_status IN ('Pe
 $active_result = $conn->query($active_query);
 $stats['active_orders'] = $active_result->fetch_assoc()['total'];
 
-// Pending Orders
+// Pending Orders (staff's main responsibility)
 $pending_query = "SELECT COUNT(*) as total FROM orders WHERE order_status = 'Pending'";
 $pending_result = $conn->query($pending_query);
 $stats['pending_orders'] = $pending_result->fetch_assoc()['total'];
+
+// Processing Orders
+$processing_query = "SELECT COUNT(*) as total FROM orders WHERE order_status = 'Processing'";
+$processing_result = $conn->query($processing_query);
+$stats['processing_orders'] = $processing_result->fetch_assoc()['total'];
 
 // Finished Orders (Delivered + Cancelled)
 $finished_query = "SELECT COUNT(*) as total FROM orders WHERE order_status IN ('Delivered', 'Cancelled')";
 $finished_result = $conn->query($finished_query);
 $stats['finished_orders'] = $finished_result->fetch_assoc()['total'];
 
-// Total Revenue
-$revenue_query = "SELECT SUM(total_amount) as total FROM orders WHERE order_status != 'Cancelled'";
-$revenue_result = $conn->query($revenue_query);
-$stats['total_revenue'] = $revenue_result->fetch_assoc()['total'] ?? 0;
+// Today's Orders
+$today_query = "SELECT COUNT(*) as total FROM orders WHERE DATE(order_date) = CURDATE()";
+$today_result = $conn->query($today_query);
+$stats['today_orders'] = $today_result->fetch_assoc()['total'];
 
-// Sales by Month (Last 6 months)
-$monthly_sales_query = "SELECT 
-    DATE_FORMAT(order_date, '%Y-%m') as month,
-    SUM(total_amount) as revenue,
-    COUNT(*) as orders
+// Yesterday's Orders (for comparison)
+$yesterday_query = "SELECT COUNT(*) as total FROM orders WHERE DATE(order_date) = DATE_SUB(CURDATE(), INTERVAL 1 DAY)";
+$yesterday_result = $conn->query($yesterday_query);
+$stats['yesterday_orders'] = $yesterday_result->fetch_assoc()['total'];
+
+// Weekly Order Trend (Last 7 days)
+$weekly_trend_query = "SELECT 
+    DATE_FORMAT(order_date, '%a') as day_name,
+    DATE(order_date) as order_day,
+    COUNT(*) as order_count
     FROM orders 
-    WHERE order_date >= DATE_SUB(NOW(), INTERVAL 6 MONTH)
-    AND order_status != 'Cancelled'
-    GROUP BY DATE_FORMAT(order_date, '%Y-%m')
-    ORDER BY month";
-$monthly_sales_result = $conn->query($monthly_sales_query);
-$monthly_sales_data = [];
-while ($row = $monthly_sales_result->fetch_assoc()) {
-    $monthly_sales_data[] = $row;
+    WHERE order_date >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+    GROUP BY DATE(order_date)
+    ORDER BY order_date ASC";
+$weekly_trend_result = $conn->query($weekly_trend_query);
+$weekly_trend_data = [];
+while ($row = $weekly_trend_result->fetch_assoc()) {
+    $weekly_trend_data[] = $row;
 }
 
 // Order Status Distribution
@@ -75,42 +84,41 @@ while ($row = $status_result->fetch_assoc()) {
     $status_data[$row['order_status']] = $row['count'];
 }
 
-// Category Performance
+// Category Performance (Staff can see what's selling to help with customer inquiries)
 $category_query = "SELECT p.category, 
-    SUM(oi.quantity) as items_sold,
-    SUM(oi.quantity * oi.price_at_order) as revenue
+    SUM(oi.quantity) as items_sold
     FROM order_items oi
     JOIN products p ON oi.product_id = p.product_id
     GROUP BY p.category
-    ORDER BY revenue DESC";
+    ORDER BY items_sold DESC";
 $category_result = $conn->query($category_query);
 $category_data = [];
 while ($row = $category_result->fetch_assoc()) {
     $category_data[] = $row;
 }
 
-// Recent Orders (only active orders)
-$recent_orders_query = "SELECT o.order_id, u.fullname, o.total_amount, o.order_date, o.order_status 
-                        FROM orders o 
-                        JOIN users u ON o.user_id = u.user_id 
-                        WHERE o.order_status IN ('Pending', 'Processing', 'Shipped')
-                        ORDER BY o.order_date DESC LIMIT 5";
-$recent_orders = $conn->query($recent_orders_query);
-
-// Top Selling Products
-$top_products_query = "SELECT p.name, SUM(oi.quantity) as total_sold 
+// Top Selling Products (Staff should know what's popular)
+$top_products_query = "SELECT p.name, p.category, SUM(oi.quantity) as total_sold 
                        FROM order_items oi 
                        JOIN products p ON oi.product_id = p.product_id 
                        GROUP BY oi.product_id 
                        ORDER BY total_sold DESC LIMIT 5";
 $top_products = $conn->query($top_products_query);
+
+// Recent Orders (last 10 - only active orders)
+$recent_orders_query = "SELECT o.order_id, u.fullname, o.total_amount, o.order_date, o.order_status 
+                        FROM orders o 
+                        JOIN users u ON o.user_id = u.user_id 
+                        WHERE o.order_status IN ('Pending', 'Processing', 'Shipped')
+                        ORDER BY o.order_date DESC LIMIT 10";
+$recent_orders = $conn->query($recent_orders_query);
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin | Dashboard</title>
+    <title>Staff | Dashboard</title>
     <link rel="stylesheet" href="../assets/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -173,6 +181,25 @@ $top_products = $conn->query($top_products_query);
             font-weight: 500;
             position: relative;
             z-index: 1;
+        }
+
+        .stat-comparison {
+            font-size: 0.85em;
+            margin-top: 5px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .stat-comparison.up {
+            color: #4caf50;
+        }
+
+        .stat-comparison.down {
+            color: #f44336;
+        }
+
+        .stat-comparison.same {
+            color: #757575;
         }
 
         .stat-card.warning .stat-icon,
@@ -279,21 +306,34 @@ $top_products = $conn->query($top_products_query);
         .top-products-list li {
             display: flex;
             justify-content: space-between;
-            padding: 12px;
+            align-items: center;
+            padding: 15px;
             margin-bottom: 10px;
             background-color: #fff5f8;
             border-radius: 8px;
             border-left: 4px solid var(--pink-dark);
         }
 
+        .product-info {
+            flex: 1;
+        }
+
         .product-name {
             font-weight: 600;
             color: #333;
+            font-size: 1.05em;
+        }
+
+        .product-category {
+            color: var(--gray-text);
+            font-size: 0.9em;
+            margin-top: 3px;
         }
 
         .product-sales {
             color: var(--pink-dark);
             font-weight: bold;
+            font-size: 1.2em;
         }
 
         .quick-actions {
@@ -336,12 +376,12 @@ $top_products = $conn->query($top_products_query);
         }
 
         .welcome-banner {
-            background: linear-gradient(135deg, var(--pink-dark), var(--pink-medium));
+            background: linear-gradient(135deg, #0dcaf0, #20c997);
             color: white;
             padding: 30px;
             border-radius: 15px;
             margin-bottom: 30px;
-            box-shadow: 0 5px 20px rgba(255, 105, 180, 0.3);
+            box-shadow: 0 5px 20px rgba(13, 202, 240, 0.3);
         }
 
         .welcome-banner h1 {
@@ -353,17 +393,29 @@ $top_products = $conn->query($top_products_query);
             color: rgba(255, 255, 255, 0.9);
             font-size: 1.1em;
         }
+
+        .info-box {
+            background: #e7f3ff;
+            border-left: 4px solid #0dcaf0;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+
+        .info-box i {
+            color: #0dcaf0;
+            margin-right: 10px;
+        }
     </style>
 </head>
 <body>
     <div class="admin-layout">
         <div class="sidebar">
-            <h2><i class="fas fa-crown"></i> Admin Panel</h2>
+            <h2><i class="fas fa-user-tie"></i> Staff Panel</h2>
             <nav class="sidebar-nav">
                 <ul>
                     <li><a href="dashboard.php" class="active"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
-                    <li><a href="manage_products.php"><i class="fas fa-box"></i> Manage Products</a></li>
-                    <li><a href="view_orders.php"><i class="fas fa-shopping-cart"></i> View Orders</a></li>
+                    <li><a href="view_orders.php"><i class="fas fa-shopping-cart"></i> Manage Orders</a></li>
                     <li><a href="../logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
                 </ul>
             </nav>
@@ -371,40 +423,33 @@ $top_products = $conn->query($top_products_query);
 
         <div class="admin-main-content">
             <div class="welcome-banner">
-                <h1><i class="fas fa-chart-line"></i> Admin Dashboard</h1>
-                <p>Welcome back! Here's what's happening with Sol Beauty today.</p>
+                <h1><i class="fas fa-chart-line"></i> Staff Dashboard</h1>
+                <p>Welcome! Here's your order management overview for Sol Beauty.</p>
+            </div>
+
+            <div class="info-box">
+                <i class="fas fa-info-circle"></i>
+                <strong>Staff Permissions:</strong> You can view all orders and update order statuses. Product management is restricted to admin only.
             </div>
 
             <!-- Statistics Cards -->
             <div class="dashboard-grid">
-                <div class="stat-card success">
-                    <i class="fas fa-peso-sign stat-icon"></i>
-                    <div class="stat-value">₱<?php echo number_format($stats['total_revenue'], 2); ?></div>
-                    <div class="stat-label">Total Revenue</div>
-                </div>
-
-                <div class="stat-card">
-                    <i class="fas fa-box stat-icon"></i>
-                    <div class="stat-value"><?php echo $stats['total_products']; ?></div>
-                    <div class="stat-label">Total Products</div>
-                </div>
-
-                <div class="stat-card success">
-                    <i class="fas fa-shopping-cart stat-icon"></i>
-                    <div class="stat-value"><?php echo $stats['total_orders']; ?></div>
-                    <div class="stat-label">Total Orders</div>
-                </div>
-
-                <div class="stat-card info">
-                    <i class="fas fa-tasks stat-icon"></i>
-                    <div class="stat-value"><?php echo $stats['active_orders']; ?></div>
-                    <div class="stat-label">Active Orders</div>
-                </div>
-
                 <div class="stat-card warning">
                     <i class="fas fa-clock stat-icon"></i>
                     <div class="stat-value"><?php echo $stats['pending_orders']; ?></div>
                     <div class="stat-label">Pending Orders</div>
+                </div>
+
+                <div class="stat-card info">
+                    <i class="fas fa-cog stat-icon"></i>
+                    <div class="stat-value"><?php echo $stats['processing_orders']; ?></div>
+                    <div class="stat-label">Processing Orders</div>
+                </div>
+
+                <div class="stat-card">
+                    <i class="fas fa-tasks stat-icon"></i>
+                    <div class="stat-value"><?php echo $stats['active_orders']; ?></div>
+                    <div class="stat-label">Active Orders</div>
                 </div>
 
                 <div class="stat-card completed">
@@ -413,25 +458,47 @@ $top_products = $conn->query($top_products_query);
                     <div class="stat-label">Finished Orders</div>
                 </div>
 
+                <div class="stat-card success">
+                    <i class="fas fa-calendar-day stat-icon"></i>
+                    <div class="stat-value"><?php echo $stats['today_orders']; ?></div>
+                    <div class="stat-label">Today's Orders</div>
+                    <?php 
+                        $diff = $stats['today_orders'] - $stats['yesterday_orders'];
+                        if ($diff > 0) {
+                            echo '<div class="stat-comparison up"><i class="fas fa-arrow-up"></i> +' . $diff . ' from yesterday</div>';
+                        } elseif ($diff < 0) {
+                            echo '<div class="stat-comparison down"><i class="fas fa-arrow-down"></i> ' . $diff . ' from yesterday</div>';
+                        } else {
+                            echo '<div class="stat-comparison same"><i class="fas fa-minus"></i> Same as yesterday</div>';
+                        }
+                    ?>
+                </div>
+
+                <div class="stat-card">
+                    <i class="fas fa-shopping-cart stat-icon"></i>
+                    <div class="stat-value"><?php echo $stats['total_orders']; ?></div>
+                    <div class="stat-label">Total Orders</div>
+                </div>
+
+                <div class="stat-card">
+                    <i class="fas fa-box stat-icon"></i>
+                    <div class="stat-value"><?php echo $stats['total_products']; ?></div>
+                    <div class="stat-label">Total Products</div>
+                </div>
+
                 <div class="stat-card warning">
                     <i class="fas fa-exclamation-triangle stat-icon"></i>
                     <div class="stat-value"><?php echo $stats['low_stock']; ?></div>
                     <div class="stat-label">Low Stock Items</div>
                 </div>
-
-                <div class="stat-card danger">
-                    <i class="fas fa-times-circle stat-icon"></i>
-                    <div class="stat-value"><?php echo $stats['out_of_stock']; ?></div>
-                    <div class="stat-label">Out of Stock</div>
-                </div>
             </div>
 
             <!-- Analytics Charts -->
             <div class="charts-grid">
-                <!-- Monthly Sales Chart -->
+                <!-- Weekly Order Trend -->
                 <div class="chart-container">
-                    <h3><i class="fas fa-chart-line"></i> Monthly Sales Trend</h3>
-                    <canvas id="monthlySalesChart"></canvas>
+                    <h3><i class="fas fa-chart-line"></i> Weekly Order Trend</h3>
+                    <canvas id="weeklyTrendChart"></canvas>
                 </div>
 
                 <!-- Order Status Distribution -->
@@ -442,17 +509,13 @@ $top_products = $conn->query($top_products_query);
 
                 <!-- Category Performance -->
                 <div class="chart-container">
-                    <h3><i class="fas fa-chart-bar"></i> Category Performance</h3>
+                    <h3><i class="fas fa-chart-bar"></i> Popular Categories</h3>
                     <canvas id="categoryChart"></canvas>
                 </div>
             </div>
 
             <!-- Quick Actions -->
             <div class="quick-actions">
-                <a href="manage_products.php" class="action-btn">
-                    <i class="fas fa-plus-circle"></i>
-                    <span>Add New Product</span>
-                </a>
                 <a href="view_orders.php?filter=active" class="action-btn">
                     <i class="fas fa-clock"></i>
                     <span>Active Orders (<?php echo $stats['active_orders']; ?>)</span>
@@ -460,10 +523,6 @@ $top_products = $conn->query($top_products_query);
                 <a href="view_orders.php?filter=finished" class="action-btn success">
                     <i class="fas fa-check-circle"></i>
                     <span>Finished Orders (<?php echo $stats['finished_orders']; ?>)</span>
-                </a>
-                <a href="manage_products.php" class="action-btn">
-                    <i class="fas fa-box"></i>
-                    <span>Manage Inventory</span>
                 </a>
             </div>
 
@@ -479,6 +538,7 @@ $top_products = $conn->query($top_products_query);
                                 <th>Amount</th>
                                 <th>Date</th>
                                 <th>Status</th>
+                                <th>Action</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -487,8 +547,13 @@ $top_products = $conn->query($top_products_query);
                                     <td><strong>#<?php echo $order['order_id']; ?></strong></td>
                                     <td><?php echo htmlspecialchars($order['fullname']); ?></td>
                                     <td><strong style="color: var(--pink-dark);">₱<?php echo number_format($order['total_amount'], 2); ?></strong></td>
-                                    <td><?php echo date("M j, Y", strtotime($order['order_date'])); ?></td>
+                                    <td><?php echo date("M j, Y g:i A", strtotime($order['order_date'])); ?></td>
                                     <td><span class="status-badge status-<?php echo $order['order_status']; ?>"><?php echo $order['order_status']; ?></span></td>
+                                    <td>
+                                        <a href="view_orders.php?filter=active" style="color: var(--pink-dark); text-decoration: none;">
+                                            <i class="fas fa-edit"></i> Manage
+                                        </a>
+                                    </td>
                                 </tr>
                             <?php endwhile; ?>
                         </tbody>
@@ -501,14 +566,25 @@ $top_products = $conn->query($top_products_query);
             <!-- Top Selling Products -->
             <div class="dashboard-section">
                 <h3><i class="fas fa-trophy"></i> Top Selling Products</h3>
+                <p style="color: var(--gray-text); margin-bottom: 15px; font-size: 0.95em;">
+                    <i class="fas fa-info-circle"></i> Know what customers are buying most - great for recommendations!
+                </p>
                 <?php if ($top_products && $top_products->num_rows > 0): ?>
                     <ul class="top-products-list">
-                        <?php while($product = $top_products->fetch_assoc()): ?>
+                        <?php $rank = 1; while($product = $top_products->fetch_assoc()): ?>
                             <li>
-                                <span class="product-name"><?php echo htmlspecialchars($product['name']); ?></span>
+                                <div class="product-info">
+                                    <div class="product-name">
+                                        <i class="fas fa-medal" style="color: <?php 
+                                            echo $rank == 1 ? '#FFD700' : ($rank == 2 ? '#C0C0C0' : ($rank == 3 ? '#CD7F32' : '#ddd')); 
+                                        ?>"></i>
+                                        <?php echo htmlspecialchars($product['name']); ?>
+                                    </div>
+                                    <div class="product-category"><?php echo htmlspecialchars($product['category']); ?></div>
+                                </div>
                                 <span class="product-sales"><?php echo $product['total_sold']; ?> sold</span>
                             </li>
-                        <?php endwhile; ?>
+                        <?php $rank++; endwhile; ?>
                     </ul>
                 <?php else: ?>
                     <p style="text-align: center; color: var(--gray-text); padding: 20px;">No sales data yet.</p>
@@ -518,28 +594,44 @@ $top_products = $conn->query($top_products_query);
     </div>
 
     <script>
-        // Monthly Sales Chart
-        const monthlySalesCtx = document.getElementById('monthlySalesChart').getContext('2d');
-        const monthlySalesChart = new Chart(monthlySalesCtx, {
+        // Weekly Order Trend Chart
+        const weeklyTrendCtx = document.getElementById('weeklyTrendChart').getContext('2d');
+        const weeklyTrendChart = new Chart(weeklyTrendCtx, {
             type: 'line',
             data: {
-                labels: <?php echo json_encode(array_column($monthly_sales_data, 'month')); ?>,
+                labels: <?php echo json_encode(array_column($weekly_trend_data, 'day_name')); ?>,
                 datasets: [{
-                    label: 'Revenue (₱)',
-                    data: <?php echo json_encode(array_column($monthly_sales_data, 'revenue')); ?>,
-                    borderColor: '#FF1493',
-                    backgroundColor: 'rgba(255, 20, 147, 0.1)',
+                    label: 'Orders',
+                    data: <?php echo json_encode(array_column($weekly_trend_data, 'order_count')); ?>,
+                    borderColor: '#0dcaf0',
+                    backgroundColor: 'rgba(13, 202, 240, 0.1)',
                     tension: 0.4,
-                    fill: true
+                    fill: true,
+                    pointBackgroundColor: '#0dcaf0',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointRadius: 5
                 }]
             },
             options: {
                 responsive: true,
                 plugins: {
-                    legend: { display: true }
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            title: function(context) {
+                                return context[0].label;
+                            }
+                        }
+                    }
                 },
                 scales: {
-                    y: { beginAtZero: true }
+                    y: { 
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
                 }
             }
         });
@@ -570,9 +662,10 @@ $top_products = $conn->query($top_products_query);
             data: {
                 labels: <?php echo json_encode(array_column($category_data, 'category')); ?>,
                 datasets: [{
-                    label: 'Revenue (₱)',
-                    data: <?php echo json_encode(array_column($category_data, 'revenue')); ?>,
-                    backgroundColor: '#FF69B4'
+                    label: 'Items Sold',
+                    data: <?php echo json_encode(array_column($category_data, 'items_sold')); ?>,
+                    backgroundColor: '#20c997',
+                    borderRadius: 8
                 }]
             },
             options: {
@@ -581,7 +674,12 @@ $top_products = $conn->query($top_products_query);
                     legend: { display: false }
                 },
                 scales: {
-                    y: { beginAtZero: true }
+                    y: { 
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
                 }
             }
         });

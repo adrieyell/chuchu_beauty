@@ -20,7 +20,7 @@ unset($_SESSION['order_total']);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Order Successful | ChuChu Beauty</title>
+    <title>Order Successful | Sol Beauty</title>
     <link rel="stylesheet" href="assets/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
@@ -64,6 +64,18 @@ unset($_SESSION['order_total']);
         .order-info strong {
             color: var(--pink-dark);
         }
+        .email-notice {
+            background: #e7f3ff;
+            border-left: 4px solid #0dcaf0;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 8px;
+            text-align: left;
+        }
+        .email-notice i {
+            color: #0dcaf0;
+            margin-right: 10px;
+        }
     </style>
 </head>
 <body>
@@ -73,15 +85,20 @@ unset($_SESSION['order_total']);
         <i class="fas fa-check-circle success-icon"></i>
         <h1>Order Placed Successfully!</h1>
         <p style="color: var(--gray-text); margin-bottom: 30px;">
-            Thank you for your purchase! Your order has been confirmed.
+            Thank you for shopping with Sol Beauty! Your order has been confirmed.
         </p>
         
         <div class="order-info">
             <p><strong>Order ID:</strong> #<?php echo $order_id; ?></p>
             <p><strong>Total Amount:</strong> ₱<?php echo number_format($order_total, 2); ?></p>
-            <p style="margin-top: 15px; font-size: 0.95em; color: var(--gray-text);">
-                <i class="fas fa-info-circle"></i> 
-                We'll process your order shortly. Check your email for order confirmation.
+        </div>
+        
+        <div class="email-notice">
+            <i class="fas fa-envelope"></i>
+            <strong>Email Confirmation Sent!</strong>
+            <p style="margin: 5px 0 0 30px; font-size: 0.95em;">
+                We've sent a detailed order confirmation to your email address. 
+                You'll also receive updates when your order status changes.
             </p>
         </div>
         

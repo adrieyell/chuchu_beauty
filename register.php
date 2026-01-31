@@ -86,7 +86,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ChuChu Beauty | Register</title>
+    <title>Sol Beauty | Register</title>
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     
@@ -154,7 +154,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <div class="auth-card">
             
             <div class="auth-logo">
-                <i class="fas fa-heart"></i> 
+                <i class="fas fa-sun"></i> 
             </div>
 
             <h2 class="login-welcome">Create Your Account</h2>

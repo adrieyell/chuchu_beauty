@@ -35,6 +35,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             // 4. Redirect based on role
             if ($user['role'] == 'admin') {
                 header("Location: admin/dashboard.php"); // Redirect to admin dashboard
+            } elseif ($user['role'] == 'staff') {
+                header("Location: staff/dashboard.php"); // Redirect to staff dashboard
             } else {
                 header("Location: index.php"); // Redirect to product page (home)
             }
@@ -53,14 +55,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ChuChu Beauty | Login</title>
+    <title>Sol Beauty | Login</title>
     <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
 <div class="auth-container">
     <div class="auth-card">
         <div class="auth-logo">
-            <i class="fas fa-heart"></i> 
+            <i class="fas fa-sun"></i> 
         </div>
 
         <h2 class="login-welcome">Welcome back!</h2>
